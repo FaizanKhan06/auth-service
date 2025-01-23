@@ -15,5 +15,6 @@ public class UserOutputDataPojo {
     String lastName;
     String phoneNo;
     boolean isDeleted;
+    String roleName;
 
 }

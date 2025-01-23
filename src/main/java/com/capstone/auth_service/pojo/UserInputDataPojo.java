@@ -15,5 +15,6 @@ public class UserInputDataPojo {
     String lastName;
     String phoneNo;
     String adhaarNo;
+    int roleId;
 
 }
