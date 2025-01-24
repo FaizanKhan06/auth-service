@@ -136,7 +136,7 @@ public class UserService {
         return jwtService.generateToken(name);
     }
 
-    public boolean verifyToken(String token) {
+    public String verifyToken(String token) {
         return jwtService.validateToken(token);
     }
 }

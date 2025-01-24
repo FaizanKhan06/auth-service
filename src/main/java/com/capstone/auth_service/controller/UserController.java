@@ -85,7 +85,7 @@ public class UserController {
     }
 
     @GetMapping("/auth/validate/token")
-    public boolean validateToken(@RequestParam String token) {
+    public String validateToken(@RequestParam String token) {
         return userService.verifyToken(token);
     }
 

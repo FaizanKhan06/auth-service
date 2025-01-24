@@ -47,7 +47,7 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token) {
+    public String validateToken(String token) {
         try {
             String username = extractUsername(token);
             UserEntity user = userRepository.findByEmail(username).orElse(null);
@@ -55,21 +55,25 @@ public class JwtService {
             // Check if user exists in the database
             if (user == null) {
                 System.out.println("User not found");
-                return false; // Token is invalid if user is not found
+                return null; // Token is invalid if user is not found
             }
 
             // Check if token is expired
             if (isTokenExpired(token)) {
                 System.out.println("Token Expired");
-                return false; // Token is expired
+                return null; // Token is expired
             }
 
             // If all checks pass, the token is valid
-            return username.equals(user.getEmail());
+            if (username.equals(user.getEmail())) {
+                return user.getEmail();
+            } else {
+                return null;
+            }
 
         } catch (Exception e) {
             System.out.println("Error during token validation: " + e.getMessage());
-            return false; // Return false if there is an error parsing or validating the token
+            return null; // Return false if there is an error parsing or validating the token
         }
     }
 
