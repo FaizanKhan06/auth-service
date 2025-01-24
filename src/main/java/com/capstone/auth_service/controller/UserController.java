@@ -24,6 +24,7 @@ import com.capstone.auth_service.service.UserService;
 
 @RestController
 @RequestMapping("/api")
+
 public class UserController {
 
     @Autowired
@@ -79,7 +80,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/auth")
+    @PostMapping("/auth/register")
     public ResponseEntity<UserOutputDataPojo> registerNewUser(@RequestBody UserInputDataPojo newUser) {
         return new ResponseEntity<>(userService.registerNewUser(newUser), HttpStatus.OK);
     }
