@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.capstone.auth_service.entity.UserEntity;
 import com.capstone.auth_service.pojo.UserInputDataPojo;
 import com.capstone.auth_service.pojo.UserOutputDataPojo;
+import com.capstone.auth_service.pojo.UserSaveSessionDataOutput;
 import com.capstone.auth_service.service.UserService;
 
 @RestController
@@ -91,7 +92,7 @@ public class UserController {
     }
 
     @PostMapping("/auth/validate/user")
-    public String getToken(@RequestBody UserEntity user) {
+    public UserSaveSessionDataOutput getToken(@RequestBody UserEntity user) {
         Authentication authenticate = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPasswordHash()));
         if (authenticate.isAuthenticated()) {

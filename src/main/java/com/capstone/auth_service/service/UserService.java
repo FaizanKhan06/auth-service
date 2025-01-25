@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.capstone.auth_service.entity.UserEntity;
 import com.capstone.auth_service.pojo.UserInputDataPojo;
 import com.capstone.auth_service.pojo.UserOutputDataPojo;
+import com.capstone.auth_service.pojo.UserSaveSessionDataOutput;
 import com.capstone.auth_service.repository.UserRepository;
 
 @Service
@@ -100,21 +101,26 @@ public class UserService {
 
     public UserOutputDataPojo registerNewUser(UserInputDataPojo newUser) {
         UserEntity newUserEntity = new UserEntity();
+        UserOutputDataPojo userOutputDataPojo = new UserOutputDataPojo();
         if (getUserByEmail(newUser.getEmail()) != null) {
             // Todo Exception email Already Exists
-            return null;
+            userOutputDataPojo.setEmail("Email Already Exists");
+            return userOutputDataPojo;
         } else if (getUserByPhoneNo(newUser.getPhoneNo()) != null) {
             // Todo Exception phoneNo Already Exists
-            return null;
+            userOutputDataPojo.setEmail("Phone Number Already Exists");
+            return userOutputDataPojo;
         } else if (getUserByAdhaarNo(newUser.getAdhaarNo()) != null) {
             // Todo Exception adhaarNo Already Exists
-            return null;
+            userOutputDataPojo.setEmail("Adhaar Already Exists");
+            return userOutputDataPojo;
         }
         BeanUtils.copyProperties(newUser, newUserEntity);
         newUserEntity.setPasswordHash(passwordEncoder.encode(newUser.getPasswordHash()));
         newUserEntity.setRole(roleService.getRoleById(newUser.getRoleId()));
         newUserEntity.setDeleted(false);
-        return convertEntityToPojo1(userRepository.saveAndFlush(newUserEntity));
+        userOutputDataPojo = convertEntityToPojo1(userRepository.saveAndFlush(newUserEntity));
+        return userOutputDataPojo;
     }
 
     public void pseudoDeleteUser(Long userId) {
@@ -132,8 +138,12 @@ public class UserService {
         }
     }
 
-    public String generateToken(String name) {
-        return jwtService.generateToken(name);
+    public UserSaveSessionDataOutput generateToken(String email) {
+        UserSaveSessionDataOutput userSaveSessionDataOutput = new UserSaveSessionDataOutput();
+        userSaveSessionDataOutput.setEmail(email);
+        userSaveSessionDataOutput.setRoleId(userRepository.findByEmail(email).get().getRole().getRoleId());
+        userSaveSessionDataOutput.setJwtToken(jwtService.generateToken(email));
+        return userSaveSessionDataOutput;
     }
 
     public String verifyToken(String token) {
