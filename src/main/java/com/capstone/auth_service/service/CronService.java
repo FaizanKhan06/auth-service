@@ -9,6 +9,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.capstone.auth_service.pojo.DateTimePojo;
 import com.capstone.auth_service.pojo.CronJobPojos.CommunityWithRulesPojo;
 
 @Service
@@ -27,7 +28,12 @@ public class CronService {
 
     public void UpdateStatusToActive() {
         RestClient restClient = RestClient.create();
-        LocalDate currentDate = LocalDate.now();
+
+        DateTimePojo dateTimePojo = restClient.put().uri("http://localhost:5010/api/time")
+                .body(new DateTimePojo(0, LocalDateTime.now())).retrieve().body(DateTimePojo.class);
+        @SuppressWarnings("null")
+        LocalDate currentDate = dateTimePojo.getDateTime().toLocalDate();
+
         List<CommunityWithRulesPojo> allCommunities = restClient.get()
                 .uri("http://localhost:5002/api/communities/notActive")
                 .retrieve()
