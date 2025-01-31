@@ -1,7 +1,5 @@
 package com.capstone.auth_service.pojo.CronJobPojos;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,15 +7,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CommunityWithRulesPojo {
+public class CommunityPojo {
     private int communityId;
     private String communityName;
     private String communityHead;
     private double currentAmount;
-    private RulesPojo rule;
+    private int ruleId;
     private boolean isPublic;
-    private int remainingTermPeriod;
-    private LocalDateTime nextContributionDate;
     private boolean isActive;
     private boolean isDeleted;
 }
