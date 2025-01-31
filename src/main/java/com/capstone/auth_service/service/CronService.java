@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -96,12 +98,23 @@ public class CronService {
             LocalDateTime newContributionDate = communityWithRulesPojo.getNextContributionDate().plusDays(daysBetween + 1);
             LocalDate currentDate = getCurrentDate().toLocalDate();
             if(currentDate.equals(newContributionDate.toLocalDate())){
+                List<TransactionEntity> allTransactions = restClient.get().uri("http://localhost:5006/api/transactions/communities/dateRange?communityId="+communityWithRulesPojo.getCommunityId()+"&startDate="+communityWithRulesPojo.getNextContributionDate()+"&endDate="+communityWithRulesPojo.getNextContributionDate().plusMonths(1)).retrieve().body(new ParameterizedTypeReference<List<TransactionEntity>>() {});
+                List<CommunityMembershipWithUserDetailsPojo> allMemberships = restClient.get().uri("http://localhost:5005/api/CommunityMembership/community/accepted/"+communityWithRulesPojo.getCommunityId()).retrieve().body(new ParameterizedTypeReference<List<CommunityMembershipWithUserDetailsPojo>>() {});
+                
+                Set<String> transactionEmails = allTransactions.stream()
+                    .map(TransactionEntity::getEmail)
+                    .collect(Collectors.toSet());
+
+                // Extract emails from CommunityMembershipWithUserDetailsPojo that are not in TransactionEntity
+                List<String> emailsNotInTransactions = allMemberships.stream()
+                    .map(membership -> membership.getUser().getEmail())
+                    .filter(email -> !transactionEmails.contains(email))
+                    .collect(Collectors.toList());
+                System.out.println("Emails present in CommunityMembershipWithUserDetailsPojo but not in transactions:");
+                emailsNotInTransactions.forEach(System.out::println);
+                
                 communityWithRulesPojo.setNextContributionDate(communityWithRulesPojo.getNextContributionDate().plusMonths(1));
                 communityWithRulesPojo.setRemainingTermPeriod(communityWithRulesPojo.getRemainingTermPeriod() - 1);
-                List<TransactionEntity> allTransactions = restClient.get().uri("localhost:5006/api/transactions/communities/dateRange?communityId="+communityWithRulesPojo.getCommunityId()+"&startDate="+communityWithRulesPojo.getNextContributionDate()+"&endDate="+communityWithRulesPojo.getNextContributionDate().plusMonths(1)).retrieve().body(new ParameterizedTypeReference<List<TransactionEntity>>() {});
-                List<CommunityMembershipWithUserDetailsPojo> allMemberships = restClient.get().uri("localhost:5005/api/CommunityMembership/community/accepted/"+communityWithRulesPojo.getCommunityId()).retrieve().body(new ParameterizedTypeReference<List<CommunityMembershipWithUserDetailsPojo>>() {});
-
-                System.out.println("\n\n\n\n"+allTransactions+"\n"+allMemberships+"\n\n\n\n");
             }  
         }
         
