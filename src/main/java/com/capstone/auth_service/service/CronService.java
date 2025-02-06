@@ -62,7 +62,7 @@ public class CronService {
             }
         }
 
-        // System.out.println("\n\n\n\n"+allCommunities+"\n\n\n\n"+toSetToActiveCommunities+"\n\n\n\n");
+        System.out.println("\n\n\n\n"+allCommunities+"\n\n\n\n"+toSetToActiveCommunities+"\n\n\n\n");
 
         if(toSetToActiveCommunities.size() <= 0 || toSetToActiveCommunities.get(0) == null){
             return;
@@ -90,31 +90,37 @@ public class CronService {
         if(allCommunities == null || allCommunities.size() <= 0 || allCommunities.get(0) == null){
             return;
         }
-        // System.out.println("\n\n\n\n"+allCommunities+"\n\n\n\n");
         
+
+        System.out.println("\n\n\n\n"+allCommunities+"\n\n\n\n");
+
         for (CommunityWithRulesPojo communityWithRulesPojo : allCommunities) {
             long daysBetween = ChronoUnit.DAYS.between(communityWithRulesPojo.getRule().getCommunityStartDate(), communityWithRulesPojo.getRule().getContributionDeadline());
             
             LocalDateTime newContributionDate = communityWithRulesPojo.getNextContributionDate().plusDays(daysBetween + 1);
             LocalDate currentDate = getCurrentDate().toLocalDate();
             if(currentDate.equals(newContributionDate.toLocalDate())){
-                List<TransactionEntity> allTransactions = restClient.get().uri("http://localhost:5006/api/transactions/communities/dateRange?communityId="+communityWithRulesPojo.getCommunityId()+"&startDate="+communityWithRulesPojo.getNextContributionDate()+"&endDate="+communityWithRulesPojo.getNextContributionDate().plusMonths(1)).retrieve().body(new ParameterizedTypeReference<List<TransactionEntity>>() {});
-                List<CommunityMembershipWithUserDetailsPojo> allMemberships = restClient.get().uri("http://localhost:5005/api/CommunityMembership/community/accepted/"+communityWithRulesPojo.getCommunityId()).retrieve().body(new ParameterizedTypeReference<List<CommunityMembershipWithUserDetailsPojo>>() {});
+                // List<TransactionEntity> allTransactions = restClient.get().uri("http://localhost:5006/api/transactions/communities/dateRange?communityId="+communityWithRulesPojo.getCommunityId()+"&startDate="+communityWithRulesPojo.getNextContributionDate()+"&endDate="+communityWithRulesPojo.getNextContributionDate().plusMonths(1)).retrieve().body(new ParameterizedTypeReference<List<TransactionEntity>>() {});
+                // List<CommunityMembershipWithUserDetailsPojo> allMemberships = restClient.get().uri("http://localhost:5005/api/CommunityMembership/community/accepted/"+communityWithRulesPojo.getCommunityId()).retrieve().body(new ParameterizedTypeReference<List<CommunityMembershipWithUserDetailsPojo>>() {});
                 
-                Set<String> transactionEmails = allTransactions.stream()
-                    .map(TransactionEntity::getEmail)
-                    .collect(Collectors.toSet());
+                // Set<String> transactionEmails = allTransactions.stream()
+                //     .map(TransactionEntity::getEmail)
+                //     .collect(Collectors.toSet());
 
-                // Extract emails from CommunityMembershipWithUserDetailsPojo that are not in TransactionEntity
-                List<String> emailsNotInTransactions = allMemberships.stream()
-                    .map(membership -> membership.getUser().getEmail())
-                    .filter(email -> !transactionEmails.contains(email))
-                    .collect(Collectors.toList());
-                System.out.println("Emails present in CommunityMembershipWithUserDetailsPojo but not in transactions:");
-                emailsNotInTransactions.forEach(System.out::println);
-                
+                // // Extract emails from CommunityMembershipWithUserDetailsPojo that are not in TransactionEntity
+                // List<String> emailsNotInTransactions = allMemberships.stream()
+                //     .map(membership -> membership.getUser().getEmail())
+                //     .filter(email -> !transactionEmails.contains(email))
+                //     .collect(Collectors.toList());
+                // System.out.println("Emails present in CommunityMembershipWithUserDetailsPojo but not in transactions:");
+                // emailsNotInTransactions.forEach(System.out::println);
+
                 communityWithRulesPojo.setNextContributionDate(communityWithRulesPojo.getNextContributionDate().plusMonths(1));
                 communityWithRulesPojo.setRemainingTermPeriod(communityWithRulesPojo.getRemainingTermPeriod() - 1);
+                restClient.put()
+                .uri("http://localhost:5002/api/communities/updateCronJob/"+communityWithRulesPojo.getCommunityId()+"?nextContributionDate="+communityWithRulesPojo.getNextContributionDate())
+                .retrieve()
+                .body(Void.class);
             }  
         }
         
